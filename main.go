@@ -288,9 +288,9 @@ func main() {
 
 		domainsMap.Store(domainName, DomainSettings{
 			name:             domainName,
-			stage:            1,
-			stageManuallySet: false,
-			rawAttack:        false,
+			stage:            2,
+			stageManuallySet: true,
+			rawAttack:        true,
 			bypassAttack:     false,
 			lastLogs:         []string{},
 
@@ -400,7 +400,7 @@ func main() {
 			domainVal, ok := domainsMap.Load(r.Host)
 			if !ok {
 				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprintf(w, "balooProxy: "+r.Host+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
+				fmt.Fprintf(w, "Web: "+r.Host+" does not exist. If you are the owner please check your to make sure the pickachu packets are properly routing & if you believe this is a mistake contact @fagkiller on telegram")
 				return
 			}
 
@@ -424,8 +424,11 @@ func main() {
 
 		domainVal, ok := domainsMap.Load(r.Host)
 		if !ok {
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "balooProxy: "+r.Host+" does not exist. If you are the owner please check your config.json if you believe this is a mistake")
+			fmt.Fprintf(w, "Web: "+r.Host+" does not exist. If you are the owner please check your to make sure the pickachu packets are properly routing & if you believe this is a mistake contact @fagkiller on telegram")
 			return
 		}
 
@@ -468,23 +471,32 @@ func main() {
 			mutex.Unlock()
 		}
 
-		w.Header().Set("baloo-Proxy", "1.0")
-
+		w.Header().Set("Server", "uwu")
+		w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+		w.Header().Set("Content-Disposition", "inline")
+		w.Header().Set("Content-Type", "text/plain")
+		
 		//Start the suspicious level where the stage currently is
 		susLv := tempDomain.stage
 
 		//Ratelimit faster if client repeatedly fails the verification challenge (feel free to play around with the threshhold)
 		if ipCountCookie > IPChallengeRequestRL {
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "Blocked by BalooProxy.\nYou have been ratelimited. (R1)")
+			fmt.Fprintf(w, "Blocked by Proxy.\nYou have been ratelimited. (R1)")
 			domainsMap.Store(domainName, tempDomain)
 			return
 		}
 
 		//Ratelimit spamming Ips (feel free to play around with the threshhold)
 		if ipCount > IPRequestRL {
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "Blocked by BalooProxy.\nYou have been ratelimited. (R2)")
+			fmt.Fprintf(w, "Blocked by Proxy.\nYou have been ratelimited. (R2)")
 			domainsMap.Store(domainName, tempDomain)
 			return
 		}
@@ -492,8 +504,11 @@ func main() {
 		//Ratelimit fingerprints that don't belong to major browsers
 		if browser == "" {
 			if fpCount > fingerprintRequestRL {
+				w.Header().Set("Server", "uwu")
+				w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+				w.Header().Set("Content-Disposition", "inline")
 				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprintf(w, "Blocked by BalooProxy.\nYou have been ratelimited. (R3)")
+				fmt.Fprintf(w, "Blocked by Proxy.\nYou have been ratelimited. (R3)")
 				domainsMap.Store(domainName, tempDomain)
 				return
 			}
@@ -508,8 +523,11 @@ func main() {
 		forbiddenFp := forbiddenFingerprints[tlsFp]
 		mutex.Unlock()
 		if forbiddenFp != "" {
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "Blocked by BalooProxy.\nYour browser %s is not allowed.", forbiddenFp)
+			fmt.Fprintf(w, "Blocked by Proxy.\nYour browser %s is not allowed.", forbiddenFp)
 			domainsMap.Store(domainName, tempDomain)
 			return
 		}
@@ -569,8 +587,32 @@ func main() {
 			case 3:
 				encryptedIP = encrypt(ip+tlsFp+fmt.Sprint(hr), CaptchaSecretKey)
 			default:
-				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprintf(w, "Blocked by BalooProxy.\nSuspicious request of level %d (base %d)", susLv, tempDomain.stage)
+				w.Header().Set("Server", "uwu")
+				w.Header().Set("X-Real-IP", r.RemoteAddr)
+				w.Header().Set("X-Forwarded-For", r.Header.Get("X-Forwarded-For"))
+				w.Header().Set("X-Forwarded-Proto", r.Header.Get("X-Forwarded-Proto"))
+			
+				w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+				w.Header().Set("X-Content-Type-Options", "nosniff")
+				w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+				w.Header().Set("X-XSS-Protection", "1; mode=block")
+				w.Header().Set("Referrer-Policy", "no-referrer-when-downgrade")
+				w.Header().Set("Permissions-Policy", "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), midi=(), encrypted-media=()")
+				w.Header().Set("Feature-Policy", "accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'; midi 'none'; encrypted-media 'none'")
+				w.Header().Set("X-Permitted-Cross-Domain-Policies", "none")
+				w.Header().Set("X-Download-Options", "noopen")
+				w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+				w.Header().Set("Referrer-Policy", "same-origin")
+				w.Header().Set("Permissions-Policy", "interest-cohort=()")
+				w.Header().Set("Feature-Policy", "interest-cohort 'none'")
+				w.Header().Set("Cache-Control", "public, max-age=31536000, s-max-age=31536000, immutable")
+				w.Header().Set("X-Cache-Status", r.Header.Get("X-Cache-Status"))
+				w.Header().Set("X-Proxy-Cache", r.Header.Get("X-Proxy-Cache"))
+				w.Header().Set("X-Accel-Expires", "3600")
+				w.Header().Set("X-Content-Duration", "604800")
+				w.Header().Set("X-UA-Compatible", "IE=edge")
+				w.Header().Set("X-Server-Cache", "HIT")
+				fmt.Fprintf(w, "Blocked by Proxy.\nSuspicious request of level %d (base %d)", susLv, tempDomain.stage)
 				domainsMap.Store(domainName, tempDomain)
 				return
 			}
@@ -580,7 +622,7 @@ func main() {
 		}
 
 		//Check if client provided correct verification result
-		if !strings.Contains(r.Header.Get("Cookie"), fmt.Sprintf("__bProxy_v=%s", encryptedIP)) {
+		if !strings.Contains(r.Header.Get("Cookie"), fmt.Sprintf("__cProxy_v=%s", encryptedIP)) {
 
 			mutex.Lock()
 			accessIpsCookie[ip] = accessIpsCookie[ip] + 1
@@ -591,13 +633,14 @@ func main() {
 			case 0:
 				//This request is not to be challenged (whitelist)
 			case 1:
-				w.Header().Set("Set-Cookie", "_1__bProxy_v="+encryptedIP+"; SameSite=None; path=/; Secure")
+				w.Header().Set("Set-Cookie", "_1__cProxy_v="+encryptedIP+"; SameSite=None; path=/; Secure")
 				http.Redirect(w, r, r.URL.RequestURI(), http.StatusTemporaryRedirect)
 				domainsMap.Store(domainName, tempDomain)
 				return
 			case 2:
+				w.Header().Set("Server", "uwu")
 				w.Header().Set("Content-Type", "text/html")
-				fmt.Fprintf(w, `<script>document.cookie = '_2__bProxy_v=%s; SameSite=None; path=/; Secure';window.location.reload();</script>`, encryptedIP)
+				fmt.Fprintf(w, `<script>document.cookie = '_2__cProxy_v=%s; SameSite=None; path=/; Secure';window.location.reload();</script>`, encryptedIP)
 				domainsMap.Store(domainName, tempDomain)
 				return
 			case 3:
@@ -624,7 +667,7 @@ func main() {
 
 					var buf bytes.Buffer
 					if err := png.Encode(&buf, captchaImg); err != nil {
-						fmt.Fprintf(w, `BalooProxy Error: Failed to encode captcha: %s`, err)
+						fmt.Fprintf(w, `Web Proxy Error: Failed to encode captcha: %s`, err)
 						domainsMap.Store(domainName, tempDomain)
 						return
 					}
@@ -637,6 +680,8 @@ func main() {
 					mutex.Unlock()
 				}
 
+				w.Header().Set("Server", "uwu")
+				w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
 				w.Header().Set("Content-Type", "text/html")
 
 				fmt.Fprintf(w,
@@ -799,10 +844,10 @@ func main() {
 						// Get the user's input
 						var input = document.getElementById('text').value;
 
-						document.cookie = '%s_3__bProxy_v='+input+'%s; SameSite=None; path=/; Secure';
+						document.cookie = '%s_3__cProxy_v='+input+'%s; SameSite=None; path=/; Secure';
 
 						// Check if the input is correct
-						fetch('https://' + location.hostname + '/_bProxy/verified').then(function(response) {
+						fetch('https://' + location.hostname + '/_cProxy/verified').then(function(response) {
 							return response.text();
 						}).then(function(text) {
 							if(text === 'verified') {
@@ -867,8 +912,11 @@ func main() {
 				domainsMap.Store(domainName, tempDomain)
 				return
 			default:
+				w.Header().Set("Server", "uwu")
+				w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+				w.Header().Set("Content-Disposition", "inline")
 				w.Header().Set("Content-Type", "text/plain")
-				fmt.Fprintf(w, "Blocked by BalooProxy.\nSuspicious request of level %d (base %d)", susLv, tempDomain.stage)
+				fmt.Fprintf(w, "Blocked by Proxy.\nSuspicious request of level %d (base %d)", susLv, tempDomain.stage)
 				domainsMap.Store(domainName, tempDomain)
 				return
 			}
@@ -893,27 +941,39 @@ func main() {
 
 		//Reserved proxy-paths
 		switch r.URL.Path {
-		case "/_bProxy/stats":
+		case "/_cProxy/stats":
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
 			fmt.Fprintf(w, "Total Requests: %s\nBypassed Requests: %s\nTotal R/s: %s\nBypassed R/s: %s\nActive Connections: %s", fmt.Sprint(tempDomain.totalRequests), fmt.Sprint(tempDomain.bypassedRequests), fmt.Sprint(tempDomain.requestsPerSecond), fmt.Sprint(tempDomain.requestsBypassedPerSecond), fmt.Sprint(cw.Count()))
 			domainsMap.Store(domainName, tempDomain)
 			return
-		case "/_bProxy/fingerprint":
+		case "/_cProxy/fingerprint":
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
 			mutex.Lock()
 			fmt.Fprintf(w, "IP: "+ip+"\nASN: "+fmt.Sprint(ipInfoASN)+"\nCountry: "+ipInfoCountry+"\nIP Requests: "+fmt.Sprint(ipCount)+"\nIP Challenge Requests: "+fmt.Sprint(accessIpsCookie[ip])+"\nFingerprint: "+tlsFp+"\nBrowser: "+browser+botFp)
 			mutex.Unlock()
 			domainsMap.Store(domainName, tempDomain)
 			return
-		case "/_bProxy/verified":
+		case "/_cProxy/verified":
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
 			fmt.Fprintf(w, "verified")
 			domainsMap.Store(domainName, tempDomain)
 			return
 		//Do not remove or modify this. It is required by the license
-		case "/_bProxy/credits":
+		case "/_cProxy/credits":
+			w.Header().Set("Server", "uwu")
+			w.Header().Set("Cache-Control", "max-age=2592000, s-max-age=2592000")
+			w.Header().Set("Content-Disposition", "inline")
 			w.Header().Set("Content-Type", "text/plain")
-			fmt.Fprintf(w, "BalooProxy; Lightweight http reverse-proxy https://github.com/41Baloo/balooProxy. Protected by GNU GENERAL PUBLIC LICENSE Version 2, June 1991")
+			fmt.Fprintf(w, "UWU; Lightweight http reverse-proxy + cdn https://uwu.rip")
 			domainsMap.Store(domainName, tempDomain)
 			return
 		}

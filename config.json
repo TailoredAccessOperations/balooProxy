@@ -1,6 +1,6 @@
 {
     "proxy": {
-        "cloudflare": false,
+        "cloudflare": true,
         "maxLogLength": 10,
         "secrets": {
             "cookie": "RE2lsXJdc2hBOd8cOmv9",
@@ -16,14 +16,14 @@
     },
     "domains": [
         {
-            "name": "baloo.dog",
+            "name": "uwu.rip",
             "scheme": "http",
-            "backend": "51.15.25.108",
-            "certificate": "server.crt",
-            "key": "server.key",
+            "backend": "147.135.41.112:7777",
+            "certificate": "/etc/letsencrypt/live/uwu.rip/fullchain.pem",
+            "key": "/etc/letsencrypt/live/uwu.rip/privkey.pem",            
             "webhook": {
-                "url": "https://discord.com/api/webhooks/1055573557880569886/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-                "name": "balooProxy",
+                "url": "https://discord.com/api/webhooks/1088845694770610186/ij-YeM9NU2d88jYkbcY86vFMANvsvbz1ZVmcrZmtUpG3rGTWmZAGyrI9Yeay7qvngBd4",
+                "name": "Web Proxy",
                 "avatar": "https://avatars.githubusercontent.com/u/73783549",
                 "attack_start_msg": "A DDoS attack has been detected against your domain `{{domain.name}}`",
                 "attack_stop_msg": "The DDoS attack against your domain `{{domain.name}}` has stopped"
@@ -34,16 +34,16 @@
                     "action": "3"
                 },
                 {
-                    "expression": "(http.path eq \"/js\")",
-                    "action": "2"
+                    "expression": "(http.path eq \"\")",
+                    "action": "3"
                 },
                 {
                     "expression": "(ip.engine eq \"\" or ((ip.engine eq \"Firefox\" and http.user_agent contains \"chrome\") or (ip.engine eq \"Chromium\" and http.user_agent contains \"firefox\")))",
-                    "action": "+1"
+                    "action": "3"
                 },
                 {
                     "expression": "(http.method ne \"GET\" and http.method ne \"POST\")",
-                    "action": "+2"
+                    "action": "3"
                 }
             ],
             "rawAttack": 1000,
@@ -53,26 +53,6 @@
             "disableRawStage3": 100,
             "disableBypassStage2": 25,
             "disableRawStage2": 25
-        },
-        {
-            "name": "baloo.one",
-            "scheme": "https",
-            "backend": "76.128.64.107",
-            "certificate": "server.crt",
-            "key": "server.key",
-            "webhook": {
-                "url": "",
-                "name": "",
-                "avatar": ""
-            },
-            "rules": [],
-            "rawAttack": 1000,
-            "bypassStage1": 250,
-            "bypassStage2": 1000,
-            "disableBypassStage3": 300,
-            "disableRawStage3": 2000,
-            "disableBypassStage2": 100,
-            "disableRawStage2": 500
         }
     ]
 }
